@@ -59,7 +59,7 @@ class DnsQuery:
     """
     def dnsNotaInStr(self, data, index):
         result = ''
-        length = struct.unpack('>B', data[index])[0]
+        length = ord(data[index])
         debut = True
         while length != 0:
             if debut:
@@ -67,13 +67,13 @@ class DnsQuery:
             else:
                 result += '.'
             if length == 192 or length == 193:
-                result += self.dnsNotaInStr(data, struct.unpack('>B', data[index + 1])[0])[1]
+                result += self.dnsNotaInStr(data, ord(data[index + 1]))[1]
                 index += 2
                 return index, result
             for i in range(index + 1, index + 1 + length):
                 result += data[i]
             index = index + length + 1
-            length = struct.unpack('>B', data[index])[0]
+            length = ord(data[index])
         index += 1
         return index, result
 
@@ -84,9 +84,9 @@ class DnsQuery:
         website = website.split('.')
         result = ''
         for i in website:
-            result += struct.pack('>B', len(i))
+            result += chr(len(i))
             result += i
-        result += struct.pack('>B', 0)
+        result += chr(0)
         return result
 
     """
