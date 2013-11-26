@@ -17,16 +17,6 @@ class DRType: # DNS Record Type
     A = 1 # IPv4
     NS = 2 # an authoritative name server
     CNAME = 5 # the canonical name for an alias; not implemented
-    SOA = 6 # marks the start of a zone of authority; not implemented
-    WKS = 11 # a well known service description; not implemented
-    PTR = 12 # a domain name pointer; not implemented
-    HINFO = 13 # host information; not implemented
-    MINFO = 14 #mailbox or mail list information; not implemented
-    MX = 15 # mail exchange; not implemented
-    TXT = 16 # text strings; not implemented
-    RP = 17 # for responsible person; not implemented
-    AFSDB = 18 # for AFS Data Base location; not implemented
-    X25 = 19 # for X.25 PSDN address; not implemented
     AAAA = 28 # IPv6
 
 class DQClass: # DNS Query Class
@@ -42,9 +32,13 @@ class DRCode: # DNS RCode
     SERVFAIL = 2
     NXDOMAIN = 3
 
+"""
+send a request to one server and get the answer
+"""
 class DnsQuery:
     _id = 1
     TIME_OUT = 1 # secondes
+
     def __init__(self):
         # qr: query/response, op: operation code, aa: authoritative answer flag, tc: truncation, rd: recursion desired, ra: recursion available, rc: response code
         self.op = self.rd = self.flags = None
@@ -59,55 +53,68 @@ class DnsQuery:
         self.nbQ = self.nbAn = self.nbAu = self.nbAd = 0
         # q: question, an: answer resource records, au: authority resource records, ad: additional resource records
         self.request = self.listQs = self.listAns = self.listAus = self.listAds = ''
-    def dnsNotInStr(self, data, index):
+
+    """
+    transform the DNS Notation of variable name into a python string
+    """
+    def dnsNotaInStr(self, data, index):
         result = ''
         length = struct.unpack('>B', data[index])[0]
         debut = True
-        # print 'index', index
         while length != 0:
             if debut:
                 debut = False
             else:
                 result += '.'
             if length == 192 or length == 193:
-                # print 'index', index
-                # print 'length', length
-                result += self.dnsNotInStr(data, struct.unpack('>B', data[index + 1])[0])[1]
+                result += self.dnsNotaInStr(data, struct.unpack('>B', data[index + 1])[0])[1]
                 index += 2
                 return index, result
-            # print 'index', index
-            # print 'length', length
             for i in range(index + 1, index + 1 + length):
                 result += data[i]
             index = index + length + 1
             length = struct.unpack('>B', data[index])[0]
         index += 1
         return index, result
-    def strInDnsNot(self,website):
+
+    """
+    transform the python string into a DNS Notation.
+    """
+    def strInDnsNota(self,website):
         website = website.split('.')
         result = ''
         for i in website:
             result += struct.pack('>B', len(i))
             result += i
-        # for i in range((len(result) % 32) / 8):
         result += struct.pack('>B', 0)
         return result
+
+    """
+    add a question because we can ask a DNS several question at the same time. However, it is usually one.
+    """
     def addQuestion(self, website, typ, cla):
-        question = self.strInDnsNot(website) + struct.pack('>H',typ) + struct.pack('>H', cla)
+        question = self.strInDnsNota(website) + struct.pack('>H',typ) + struct.pack('>H', cla)
         self.listQs += question
         self.nbQ += 1
+
+    """
+    convert all variable of this class into a string we can send to a DNS
+    """
     def convertInStr(self):
         self.flags = self.rc + (self.ra << 7) + (self.rd << 8) + (self.tc << 9) + (self.aa << 10) + (self.op << 11) + (self.listQsr << 15)
         self.request = self.id + struct.pack('>H', self.flags) + struct.pack('>H', self.nbQ) + struct.pack('>H', self.nbAn) + struct.pack('>H', self.nbAu) + struct.pack('>H', self.nbAd) + self.listQs + self.listAns + self.listAus + self.listAds
+
+    """
+    process the RData from a resource record
+    """
     def processRData(self, typ, data, index, length):
         result = ''
-        # print typ
         if typ == DRType.A:
             for i in range(index, index + length - 1):
                 result = result + str(ord(data[i])) + '.'
             result += str(ord(data[index + length - 1]))
         elif typ == DRType.NS or typ == DRType.CNAME:
-            result += self.dnsNotInStr(data, index)[1]
+            result += self.dnsNotaInStr(data, index)[1]
         elif typ == DRType.AAAA:
             for i in range(index, index + length - 2, 2):
                 result = result + '{:02x}'.format(ord(data[i])) + '{:02x}'.format(ord(data[i + 1])) + ':'
@@ -115,6 +122,10 @@ class DnsQuery:
         else:
             pass
         return result
+
+    """
+    process the raw data received from a DNS to be interpreted more easily
+    """
     def process(self, data):
         aa = (ord(data[2]) >> 2) & 1 == 1
         tc = (ord(data[2]) >> 1) & 1 == 1
@@ -131,31 +142,34 @@ class DnsQuery:
             listAus = [] 
             listAds = []
             listTemp = [[listAns, nbAn], [listAus, nbAu], [listAds,nbAd]]
-            # print listTemp
             for i in listTemp:
-                # print 'oui', i[1]
                 for j in range(i[1]):
-                    # print index
                     temp = []
-                    index, name = self.dnsNotInStr(data, index)
+                    index, name = self.dnsNotaInStr(data, index)
                     temp.append(name)
-                    # print name
                     typ = struct.unpack('>H', data[index] + data[index + 1])[0]
                     temp.append(typ)
                     temp.append(struct.unpack('>H', data[index + 2] + data[index + 3])[0])
                     temp.append(struct.unpack('>I', data[index + 4] + data[index + 5] + data[index + 6] + data[index + 7])[0])
                     length = struct.unpack('>H', data[index + 8] + data[index + 9])[0]
                     temp.append(length)
-                    # print 'length', length
                     index = index + 10
                     temp.append(self.processRData(typ, data, index, length))
                     index += length
                     i[0].append(temp)
             return aa, tc, ra, rc, nbAn, nbAu, nbAd, listAns, listAus, listAds
+
+    """
+    remove all questions
+    """
     def clearQuestion(self):
         self.listQs = ''
         print self.listQs
         self.nbQ = 0
+
+    """
+    send the question to a DNS and receive the raw data answer
+    """
     def sendQuery(self, ip, IPv4):
         if IPv4:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -163,8 +177,6 @@ class DnsQuery:
             s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
         host = ip
         port = 53
-        # bytes = BitArray(bytes=self.request)
-        # print bytes.bin
         s.sendto(self.request, (host, port))
         timeStart = time.time()
         try:
