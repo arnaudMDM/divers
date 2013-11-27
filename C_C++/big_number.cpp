@@ -16,11 +16,11 @@ BigNum::BigNum(const string s){
 	else
 		negatif = false;
 
-	for (int i = str.size() ; i > 0 ; i -= DIGIT){
-		if(i - DIGIT <= 0)
+	for (int i = str.size() ; i > 0 ; i -= DIGIT_NUMBER){
+		if(i - DIGIT_NUMBER <= 0)
 			listeNumbers.push_back(strtoll(str.substr(0, i).c_str(), NULL, 10));
 		else
-			listeNumbers.push_back(strtoll(str.substr(i - DIGIT, DIGIT).c_str(), NULL, 10));
+			listeNumbers.push_back(strtoll(str.substr(i - DIGIT_NUMBER, DIGIT_NUMBER).c_str(), NULL, 10));
 	}
 }
 
@@ -55,38 +55,7 @@ BigNum& BigNum::operator = (long long int i){
 }
 
 BigNum BigNum::operator / (BigNum& other){
-	if(listeNumbers.size() < other.listeNumbers.size()){
-		return BigNum("0");
-	}
-	else if(listeNumbers.size() == other.listeNumbers.size()){
-		vector<long long int>::reverse_iterator it1 = listeNumbers.rbegin();
-		vector<long long int>::reverse_iterator it2 = other.listeNumbers.rbegin();
-		bool ok = false;
-		while(!ok && it1 < listeNumbers.rend()){
-			if(*it1 < *it2){
-				return BigNum("0");
-			}
-			else if(*it1 < *it2)
-				ok = true;
-			it1++;
-			it2++;
-		}
-	}
-
-	BigNum temp = other;
-	BigNum diff = *this - temp;
-	unsigned long long int i = 0;
-	while((diff.listeNumbers.back() & 0x8000000000000000) == 0){
-		temp = temp + other;
-		diff = *this - temp;
-		i++;
-	}
-	BigNum res(i);
-	if((negatif && !other.negatif) || (!negatif && other.negatif))
-		res.negatif = true;
-	else
-		res.negatif = false;
-	return res;
+	return *this;
 }
 
 BigNum BigNum::operator * (BigNum& other){
@@ -126,7 +95,7 @@ BigNum BigNum::operator * (BigNum& other){
 		tempAvReste = 0;
 		vector<short int> listeDigits;
 
-		for(unsigned long long int m = 1 ; m < 100000000000000000 ; m *= 10 )
+		for(unsigned long long int m = 1 ; m < DIGIT_PUISSANCE_10 ; m *= 10 )
 			listeDigits.push_back((*itMin % (m * 10)) / m);
 
 		while(itMax < pMax->end()){
@@ -140,25 +109,25 @@ BigNum BigNum::operator * (BigNum& other){
 				exist = false;
 
 			temp = temp + tempAvRetenue + tempAvReste;
-			if((tempApRetenue = temp / 100000000000000000) != 0)
-				temp = temp % 100000000000000000;
+			if((tempApRetenue = temp / DIGIT_PUISSANCE_10) != 0)
+				temp = temp % DIGIT_PUISSANCE_10;
 
 			unsigned long long int k = 1;
-			for(unsigned long long int m = 0 ; m < DIGIT ; m++){
-				if((tempApReste += ((*itMax * listeDigits.at(m)) / (100000000000000000 / k))) != 0)
-					temp2 += (((*itMax * listeDigits.at(m)) % (100000000000000000 / k)) * k);
+			for(unsigned long long int m = 0 ; m < DIGIT_NUMBER ; m++){
+				if((tempApReste += ((*itMax * listeDigits.at(m)) / (DIGIT_PUISSANCE_10 / k))) != 0)
+					temp2 += (((*itMax * listeDigits.at(m)) % (DIGIT_PUISSANCE_10 / k)) * k);
 				else
 					temp2 += (*itMax * listeDigits.at(m) * k);
 
-				if((tempApReste += (temp2 / 100000000000000000)) != 0)
-					temp2 = temp2 % 100000000000000000;
+				if((tempApReste += (temp2 / DIGIT_PUISSANCE_10)) != 0)
+					temp2 = temp2 % DIGIT_PUISSANCE_10;
 
 				k *= 10;
 			}
 
 			temp += temp2;
-			if((tempApRetenue += temp / 100000000000000000) != 0)
-				temp = temp % 100000000000000000;
+			if((tempApRetenue += temp / DIGIT_PUISSANCE_10) != 0)
+				temp = temp % DIGIT_PUISSANCE_10;
 
 			if(exist)
 				res.listeNumbers.at(i + j) = temp;
@@ -181,8 +150,8 @@ BigNum BigNum::operator * (BigNum& other){
 				exist = false;
 
 			temp = temp + tempAvRetenue + tempAvReste;
-			if((tempApRetenue = temp / 100000000000000000) != 0)
-				temp = temp % 100000000000000000;
+			if((tempApRetenue = temp / DIGIT_PUISSANCE_10) != 0)
+				temp = temp % DIGIT_PUISSANCE_10;
 
 			if(exist)
 				res.listeNumbers.at(i + j) = temp;
@@ -201,8 +170,8 @@ BigNum BigNum::operator * (BigNum& other){
 					exist = false;
 
 				temp = temp + tempAvRetenue;
-				if((tempApRetenue = temp / 100000000000000000) != 0)
-					temp = temp % 100000000000000000;
+				if((tempApRetenue = temp / DIGIT_PUISSANCE_10) != 0)
+					temp = temp % DIGIT_PUISSANCE_10;
 
 				if(exist)
 					res.listeNumbers.at(i + j) = temp;
@@ -282,7 +251,7 @@ BigNum BigNum::operator + (BigNum& other){
 			temp = *itMax - *itMin - retenue;
 			if(temp < 0)
 			{
-				temp += 100000000000000000;
+				temp += DIGIT_PUISSANCE_10;
 				retenue = 1;
 			}
 
@@ -296,7 +265,7 @@ BigNum BigNum::operator + (BigNum& other){
 			if(retenue){
 				temp = *itMax - retenue;
 				if(temp < 0)
-					temp += 100000000000000000;
+					temp += DIGIT_PUISSANCE_10;
 				else
 					retenue = 0;
 				res.listeNumbers.push_back(temp);
@@ -315,9 +284,9 @@ BigNum BigNum::operator + (BigNum& other){
 
 		while(itMin < pMin->end()){
 			temp = (*itMin) + (*itMax) + retenue;
-			if((retenue = (temp / 100000000000000000)) != 0)
+			if((retenue = (temp / DIGIT_PUISSANCE_10)) != 0)
 			{
-				temp = temp % 100000000000000000;
+				temp = temp % DIGIT_PUISSANCE_10;
 			}
 			res.listeNumbers.push_back(temp);
 			itMin++;
@@ -326,7 +295,7 @@ BigNum BigNum::operator + (BigNum& other){
 
 		while(itMax < pMax->end()){
 			if(retenue != 0){
-				if(*itMax != 99999999999999999){
+				if(*itMax != (DIGIT_PUISSANCE_10 - 1)){
 					res.listeNumbers.push_back(retenue + *itMax);
 					itMax ++;
 					retenue = 0;

@@ -6,7 +6,9 @@
 #include <cstring>
 #include <cstdio>
 
-#define DIGIT 17
+#define DIGIT_NUMBER 17
+#define DIGIT_PRINTF "%.17lld"
+#define DIGIT_PUISSANCE_10 100000000000000000
 
 using namespace std;
 
@@ -32,11 +34,11 @@ protected:
 
 ostream& operator << (ostream& os, BigNum& bigNum){
 	vector<long long int> liste = bigNum.getListeNumbers();
-	char buffer[DIGIT + 2];
+	char buffer[DIGIT_NUMBER + 2];
 	vector<long long int>::reverse_iterator it = liste.rbegin();
 	while(it < liste.rend()){
 		if(it != liste.rbegin())
-			sprintf(buffer,"%.17lld",*it);
+			sprintf(buffer, DIGIT_PRINTF,*it);
 		else{
 			if(bigNum.getNegatif()){
 				buffer[0] = '-';
