@@ -20,7 +20,7 @@ public:
 	BigNum(const BigNum& other);
 	BigNum(long long int i);
 	vector<long long int>& getListeNumbers(){return listeNumbers;}
-	bool getNegatif(){return negatif;}
+	bool getNegatif(){return negative;}
 	BigNum& operator = (const BigNum& other);
 	BigNum& operator = (long long int i);
 	BigNum operator + (BigNum& other);
@@ -29,7 +29,7 @@ public:
 	BigNum operator / (BigNum& other);
 protected:
 	vector<long long int> listeNumbers;
-	bool negatif;
+	bool negative;
 };
 
 ostream& operator << (ostream& os, BigNum& bigNum){
