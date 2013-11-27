@@ -40,10 +40,10 @@ ostream& operator << (ostream& os, BigNum& bigNum){
 		else{
 			if(bigNum.getNegatif()){
 				buffer[0] = '-';
-				sprintf(buffer+1,"%lld",(*it & 0x7fffffffffffffff));
+				sprintf(buffer+1,"%lld",*it);
 			}
 			else
-				sprintf(buffer,"%lld",(*it & 0x7fffffffffffffff));
+				sprintf(buffer,"%lld",*it);
 		}
 		os << buffer;
 		it++;
