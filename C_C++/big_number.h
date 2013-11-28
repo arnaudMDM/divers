@@ -6,7 +6,9 @@
 #include <cstring>
 #include <cstdio>
 
-#define DIGIT 17
+#define DIGIT_NUMBER 17
+#define DIGIT_PRINTF "%.17lld"
+#define DIGIT_PUISSANCE_10 100000000000000000
 
 using namespace std;
 
@@ -18,7 +20,7 @@ public:
 	BigNum(const BigNum& other);
 	BigNum(long long int i);
 	vector<long long int>& getListeNumbers(){return listeNumbers;}
-	bool getNegatif(){return negatif;}
+	bool getNegatif(){return negative;}
 	BigNum& operator = (const BigNum& other);
 	BigNum& operator = (long long int i);
 	BigNum operator + (BigNum& other);
@@ -27,23 +29,23 @@ public:
 	BigNum operator / (BigNum& other);
 protected:
 	vector<long long int> listeNumbers;
-	bool negatif;
+	bool negative;
 };
 
 ostream& operator << (ostream& os, BigNum& bigNum){
 	vector<long long int> liste = bigNum.getListeNumbers();
-	char buffer[DIGIT + 2];
+	char buffer[DIGIT_NUMBER + 2];
 	vector<long long int>::reverse_iterator it = liste.rbegin();
 	while(it < liste.rend()){
 		if(it != liste.rbegin())
-			sprintf(buffer,"%.17lld",*it);
+			sprintf(buffer, DIGIT_PRINTF,*it);
 		else{
 			if(bigNum.getNegatif()){
 				buffer[0] = '-';
-				sprintf(buffer+1,"%lld",(*it & 0x7fffffffffffffff));
+				sprintf(buffer+1,"%lld",*it);
 			}
 			else
-				sprintf(buffer,"%lld",(*it & 0x7fffffffffffffff));
+				sprintf(buffer,"%lld",*it);
 		}
 		os << buffer;
 		it++;

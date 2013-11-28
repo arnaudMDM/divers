@@ -10,96 +10,68 @@ BigNum::BigNum(const string s){
 		if(str.size() < 2)
 			throw "string not correct";
 		else
-			negatif = true;
+			negative = true;
 			str.erase(0,1);
 	}
 	else
-		negatif = false;
+		negative = false;
 
-	for (int i = str.size() ; i > 0 ; i -= DIGIT){
-		if(i - DIGIT <= 0)
+	for (int i = str.size() ; i > 0 ; i -= DIGIT_NUMBER){
+		if(i - DIGIT_NUMBER <= 0)
 			listeNumbers.push_back(strtoll(str.substr(0, i).c_str(), NULL, 10));
 		else
-			listeNumbers.push_back(strtoll(str.substr(i - DIGIT, DIGIT).c_str(), NULL, 10));
+			listeNumbers.push_back(strtoll(str.substr(i - DIGIT_NUMBER, DIGIT_NUMBER).c_str(), NULL, 10));
 	}
 }
 
 BigNum::BigNum(const BigNum& other){
 	listeNumbers = other.listeNumbers;
-	negatif = other.negatif;
+	negative = other.negative;
 }
 
 BigNum::BigNum(long long int i){
 	if(i < 0)
-		negatif = true;
+		negative = true;
 	else
-		negatif = false;
+		negative = false;
 
 	listeNumbers.push_back(i);
 }
 
 BigNum& BigNum::operator = (const BigNum& other){
 	listeNumbers = other.listeNumbers;
-	negatif = other.negatif;
+	negative = other.negative;
 	return *this;
 }
 
 BigNum& BigNum::operator = (long long int i){
 	listeNumbers.clear();
 	if(i < 0)
-		negatif = true;
+		negative = true;
 	else
-		negatif = false;
+		negative = false;
 
 	listeNumbers.push_back(i);
 }
 
+//not implemented
 BigNum BigNum::operator / (BigNum& other){
-	if(listeNumbers.size() < other.listeNumbers.size()){
-		return BigNum("0");
-	}
-	else if(listeNumbers.size() == other.listeNumbers.size()){
-		vector<long long int>::reverse_iterator it1 = listeNumbers.rbegin();
-		vector<long long int>::reverse_iterator it2 = other.listeNumbers.rbegin();
-		bool ok = false;
-		while(!ok && it1 < listeNumbers.rend()){
-			if(*it1 < *it2){
-				return BigNum("0");
-			}
-			else if(*it1 < *it2)
-				ok = true;
-			it1++;
-			it2++;
-		}
-	}
-
-	BigNum temp = other;
-	BigNum diff = *this - temp;
-	unsigned long long int i = 0;
-	while((diff.listeNumbers.back() & 0x8000000000000000) == 0){
-		temp = temp + other;
-		diff = *this - temp;
-		i++;
-	}
-	BigNum res(i);
-	if((negatif && !other.negatif) || (!negatif && other.negatif))
-		res.negatif = true;
-	else
-		res.negatif = false;
-	return res;
+	return *this;
 }
 
 BigNum BigNum::operator * (BigNum& other){
-	BigNum res;
+	BigNum res; //result
 
-	if((negatif && !other.negatif) || (!negatif && other.negatif))
-		res.negatif = true;
+	//we check what sign the result will be.
+	if((negative && !other.negative) || (!negative && other.negative))
+		res.negative = true;
 	else
-		res.negatif = false;
+		res.negative = false;
 
 	vector<long long int>* pMin;
 	vector<long long int>* pMax;
 
+	//pMax has to point to BigNum which has the longest listeNumber. It is the opposite for pMin.
 	if(listeNumbers.size() > other.listeNumbers.size()){
 		pMin = &(other.listeNumbers);
 		pMax = &listeNumbers;
@@ -113,25 +85,30 @@ BigNum BigNum::operator * (BigNum& other){
 	vector<long long int>::iterator itMax = pMax->begin();
 	long long int temp = 0;
 	long long int temp2 = 0;
-	long long int tempAvRetenue;
-	long long int tempApRetenue;
-	long long int tempAvReste;
-	long long int tempApReste;
-	unsigned long long int i = 0;
-	unsigned long long int j = 0;
+	long long int tempBfDeduction;
+	long long int tempAfDeduction;
+	long long int tempBfRest;
+	long long int tempAfRest;
+	unsigned long long int i = 0; //represents the index of the loop of pMin.
+	unsigned long long int j = 0; //represents the index of the loop of pMax.
 	bool exist = false;
 
+	//we loop for every "long long int" in pMin.
 	while(itMin < pMin->end()){
-		tempAvRetenue = 0;
-		tempAvReste = 0;
+		tempBfDeduction = 0;
+		tempBfRest = 0;
 		vector<short int> listeDigits;
 
-		for(unsigned long long int m = 1 ; m < 100000000000000000 ; m *= 10 )
+		//we split all digits from the "long long int".
+		for(unsigned long long int m = 1 ; m < DIGIT_PUISSANCE_10 ; m *= 10 )
 			listeDigits.push_back((*itMin % (m * 10)) / m);
 
+		//we loop for every "long long int" in pMax
 		while(itMax < pMax->end()){
-			tempApReste = 0;
-			tempApRetenue = 0;
+			tempAfRest = 0;
+			tempAfDeduction = 0;
+
+			//check if res has already a value at the index i+j
 			if(res.listeNumbers.size() > (i + j)){
 				temp = res.listeNumbers.at(i + j);
 				exist = true;
@@ -139,111 +116,99 @@ BigNum BigNum::operator * (BigNum& other){
 			else
 				exist = false;
 
-			temp = temp + tempAvRetenue + tempAvReste;
-			if((tempApRetenue = temp / 100000000000000000) != 0)
-				temp = temp % 100000000000000000;
+			temp = temp + tempBfDeduction + tempBfRest;
+			//check if temp is greater than DIGIT_PUISSANCE - 1
+			if((tempAfDeduction = temp / DIGIT_PUISSANCE_10) != 0)
+				temp = temp % DIGIT_PUISSANCE_10; //we just need the number before the DIGIT_NUMBER digit
 
 			unsigned long long int k = 1;
-			for(unsigned long long int m = 0 ; m < DIGIT ; m++){
-				if((tempApReste += ((*itMax * listeDigits.at(m)) / (100000000000000000 / k))) != 0)
-					temp2 += (((*itMax * listeDigits.at(m)) % (100000000000000000 / k)) * k);
+			//we loop every digit of listeDigits
+			for(unsigned long long int m = 0 ; m < DIGIT_NUMBER ; m++){
+				//we check if the multiplication of the digit with the "long long int" from pMax is greater than (DIGIT_PUISSANCE_10/k) - 1
+				if((*itMax * listeDigits.at(m) / (DIGIT_PUISSANCE_10 / k)) != 0){
+					tempAfRest += *itMax * listeDigits.at(m) / (DIGIT_PUISSANCE_10 / k);
+					temp2 += (((*itMax * listeDigits.at(m)) % (DIGIT_PUISSANCE_10 / k)) * k);
+				}
 				else
 					temp2 += (*itMax * listeDigits.at(m) * k);
 
-				if((tempApReste += (temp2 / 100000000000000000)) != 0)
-					temp2 = temp2 % 100000000000000000;
-
+				//we check if temp2 is greater than DIGIT_PUISSANCE_10 - 1
+				if(temp2 / DIGIT_PUISSANCE_10 != 0){
+					tempAfRest += temp2 / DIGIT_PUISSANCE_10;
+					temp2 = temp2 % DIGIT_PUISSANCE_10;
+				}
 				k *= 10;
 			}
 
 			temp += temp2;
-			if((tempApRetenue += temp / 100000000000000000) != 0)
-				temp = temp % 100000000000000000;
+			//we check if temp is greater than DIGIT_PUISSANCE_10 - 1
+			if(temp / DIGIT_PUISSANCE_10 != 0){
+				tempAfDeduction += temp / DIGIT_PUISSANCE_10;
+				temp = temp % DIGIT_PUISSANCE_10;
+			}
 
 			if(exist)
 				res.listeNumbers.at(i + j) = temp;
 			else
 				res.listeNumbers.push_back(temp);
 
-			tempAvRetenue = tempApRetenue;
-			tempAvReste = tempApReste;
+			tempBfDeduction = tempAfDeduction;
+			tempBfRest = tempAfRest;
 			temp = 0;
 			temp2 = 0;
 			j++;
 			itMax++;
 		}
-		if(tempAvReste != 0 || tempAvRetenue != 0){
-			if(res.listeNumbers.size() > (i + j)){
-				temp = res.listeNumbers.at(i + j);
-				exist = true;
-			}
-			else
-				exist = false;
-
-			temp = temp + tempAvRetenue + tempAvReste;
-			if((tempApRetenue = temp / 100000000000000000) != 0)
-				temp = temp % 100000000000000000;
-
-			if(exist)
-				res.listeNumbers.at(i + j) = temp;
-			else
+		//there is no more "long long int" in pMax to read but there is maybe a deduction to add.
+		if(tempBfRest != 0 || tempBfDeduction != 0){
+				temp = /*temp + */tempBfDeduction + tempBfRest;
+				if((tempAfDeduction = temp / DIGIT_PUISSANCE_10) != 0)
+					temp = temp % DIGIT_PUISSANCE_10;
+				
 				res.listeNumbers.push_back(temp);
-
-			tempAvRetenue = tempApRetenue;
-			j++;
-
-			while(tempAvRetenue != 0){
-				if(res.listeNumbers.size() > (i + j)){
-					temp = res.listeNumbers.at(i + j);
-					exist = true;
-				}
-				else
-					exist = false;
-
-				temp = temp + tempAvRetenue;
-				if((tempApRetenue = temp / 100000000000000000) != 0)
-					temp = temp % 100000000000000000;
-
-				if(exist)
-					res.listeNumbers.at(i + j) = temp;
-				else
-					res.listeNumbers.push_back(temp);
-
-				tempAvRetenue = tempApRetenue;
-				j++;
-			}
 		}
+		//we have read all digits of one "long long int" of pMin.
 		j = 0;
 		itMax = pMax->begin();
 		itMin++;
 		i++;
 	}
+
+	//we get rid of the 0 present et the beginning.
+	while(res.listeNumbers.back() == 0 && res.listeNumbers.size() > 1)
+		res.listeNumbers.pop_back();
+
+	//we get rid of the sign "-" if the result is 0
+	if(res.listeNumbers.size() == 1 && res.listeNumbers.back() == 0)
+		res.negative = false;
 	return res;
 }
 
 BigNum BigNum::operator - (BigNum& other){
-	other.negatif = !other.negatif;
+	//soustract A from B is the same as add -A and B.
+	other.negative = !other.negative;
 	return (*this + other);
 }
 
 BigNum BigNum::operator + (BigNum& other){
 	BigNum res;
-	res.negatif = false;
+	res.negative = false;
 
 	vector<long long int>* pMin = NULL;
 	vector<long long int>* pMax = NULL;
 
+	//decide who is pMin and pMax. decide also if the result is negative or positive
 	if(listeNumbers.size() > other.listeNumbers.size()){
 		pMin = &(other.listeNumbers);
 		pMax = &listeNumbers;
-		if(negatif)
-			res.negatif = true;
+		if(negative)
+			res.negative = true;
 	}
 	else if(listeNumbers.size() < other.listeNumbers.size()){
 		pMin = &listeNumbers;
 		pMax = &(other.listeNumbers);
-		if(other.negatif)
-			res.negatif = true;
+		if(other.negative)
+			res.negative = true;
 	}
 	else{
 		vector<long long int>::reverse_iterator it1 = listeNumbers.rbegin();
@@ -252,14 +217,14 @@ BigNum BigNum::operator + (BigNum& other){
 			if(*it1 > *it2){
 				pMin = &(other.listeNumbers);
 				pMax = &listeNumbers;
-				if(negatif)
-					res.negatif = true;
+				if(negative)
+					res.negative = true;
 			}
 			else if(*it1 < *it2){
 				pMin = &listeNumbers;
 				pMax = &(other.listeNumbers);
-				if(other.negatif)
-					res.negatif = true;
+				if(other.negative)
+					res.negative = true;
 			}
 			it1++;
 			it2++;
@@ -273,17 +238,19 @@ BigNum BigNum::operator + (BigNum& other){
 	vector<long long int>::iterator itMin = pMin->begin();
 	vector<long long int>::iterator itMax = pMax->begin();
 
-	short int retenue = 0;
+	short int deduction = 0;
 	long long int temp;
 		
-	if((negatif && !other.negatif) || (!negatif && other.negatif)){
+	//algorithm of two number having the same sign is diffrent of two numbers having opposite signs.
+	if((negative && !other.negative) || (!negative && other.negative)){
 
+		//we are soustracting *itMin from *itMax because they have opposite sign.
 		while(itMin < pMin->end()){
-			temp = *itMax - *itMin - retenue;
+			temp = *itMax - *itMin - deduction;
 			if(temp < 0)
 			{
-				temp += 100000000000000000;
-				retenue = 1;
+				temp += DIGIT_PUISSANCE_10; //to understand this, see 15 - 6 when the number of digit is 1.
+				deduction = 1;
 			}
 
 			res.listeNumbers.push_back(temp);
@@ -291,45 +258,46 @@ BigNum BigNum::operator + (BigNum& other){
 			itMin++;
 			itMax++;
 		}
+		//itMin is fully read. Now we just have to add the rest in itMax considering the deduction.
 		while(itMax < pMax->end())
 		{
-			if(retenue){
-				temp = *itMax - retenue;
+			if(deduction){
+				temp = *itMax - deduction;
 				if(temp < 0)
-					temp += 100000000000000000;
+					temp += DIGIT_PUISSANCE_10;
 				else
-					retenue = 0;
+					deduction = 0;
 				res.listeNumbers.push_back(temp);
 			}
 			else
 				res.listeNumbers.push_back(*itMax);
 			itMax++;
 		}
-
-		while(res.listeNumbers.back() == 0 && res.listeNumbers.size() > 1)
-			res.listeNumbers.pop_back();
 	}
 	else{
-		if(negatif && other.negatif)
-			res.negatif = true;
+		//if the two nulbers are negative
+		if(negative && other.negative)
+			res.negative = true;
 
+		//we doing the addition itMin and itMax and the deduction.
 		while(itMin < pMin->end()){
-			temp = (*itMin) + (*itMax) + retenue;
-			if((retenue = (temp / 100000000000000000)) != 0)
+			temp = (*itMin) + (*itMax) + deduction;
+			if((deduction = (temp / DIGIT_PUISSANCE_10)) != 0)
 			{
-				temp = temp % 100000000000000000;
+				temp = temp % DIGIT_PUISSANCE_10;
 			}
 			res.listeNumbers.push_back(temp);
 			itMin++;
 			itMax++;
 		}
 
+		//add the rest of itMax considering the deduction
 		while(itMax < pMax->end()){
-			if(retenue != 0){
-				if(*itMax != 99999999999999999){
-					res.listeNumbers.push_back(retenue + *itMax);
+			if(deduction != 0){
+				if(*itMax != (DIGIT_PUISSANCE_10 - 1)){
+					res.listeNumbers.push_back(deduction + *itMax);
 					itMax ++;
-					retenue = 0;
+					deduction = 0;
 				}
 				else{
 					res.listeNumbers.push_back(0);
@@ -341,19 +309,28 @@ BigNum BigNum::operator + (BigNum& other){
 					res.listeNumbers.push_back(*itMax);
 					itMax ++;
 				}
-				return res;
+				break;
 			}
 		}
-		if(retenue != 0)
-			res.listeNumbers.push_back(retenue);
-		return res;
+		if(deduction != 0)
+			res.listeNumbers.push_back(deduction);
 	}
+
+	//we get rid of the 0 present et the beginning.
+	while(res.listeNumbers.back() == 0 && res.listeNumbers.size() > 1)
+		res.listeNumbers.pop_back();
+
+	//we get rid of the sign "-" if the result is 0
+	if(res.listeNumbers.size() == 1 && res.listeNumbers.back() == 0)
+		res.negative = false;
+
+	return res;
 }
 
 int main(){
-	BigNum j("-1000000300000000000000000");
-	BigNum i("20000000000000000000000000000000000000000000000");
-	j = j * i;
+	BigNum j("1");
+	BigNum i("555555555555555555555555555555555555555555555555555");
+	j = j + i;
 	cout << j <<endl;
 	//15 minutes multiplication 745000 numbers (500000 * 280000) ; 19 minutes multiplication 745000 numbers (350000 * 390000)
 	//4.2 seconds addition 548000 numbers
