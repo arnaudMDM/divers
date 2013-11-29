@@ -72,4 +72,4 @@ def findIP(website, show):
                 listAdress = [ x[5] for x in listAds ]
     return result
 
-print findIP('stackoverflow.com', True)
+print findIP('www.ign.com', True)

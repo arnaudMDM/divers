@@ -42,7 +42,7 @@ class DnsQuery:
     def __init__(self):
         # qr: query/response, op: operation code, aa: authoritative answer flag, tc: truncation, rd: recursion desired, ra: recursion available, rc: response code
         self.op = self.rd = self.flags = None
-        self.listQsr = self.aa = self.tc = self.ra = self.rc = 0
+        self.qr = self.aa = self.tc = self.ra = self.rc = 0
         try:
             self.id = struct.pack('>H', DnsQuery._id)
             DnsQuery._id += 1
@@ -101,7 +101,7 @@ class DnsQuery:
     convert all variable of this class into a string we can send to a DNS
     """
     def convertInStr(self):
-        self.flags = self.rc + (self.ra << 7) + (self.rd << 8) + (self.tc << 9) + (self.aa << 10) + (self.op << 11) + (self.listQsr << 15)
+        self.flags = self.rc + (self.ra << 7) + (self.rd << 8) + (self.tc << 9) + (self.aa << 10) + (self.op << 11) + (self.qr << 15)
         self.request = self.id + struct.pack('>H', self.flags) + struct.pack('>H', self.nbQ) + struct.pack('>H', self.nbAn) + struct.pack('>H', self.nbAu) + struct.pack('>H', self.nbAd) + self.listQs + self.listAns + self.listAus + self.listAds
 
     """
@@ -184,7 +184,7 @@ class DnsQuery:
             while(time.time() - timeStart < DnsQuery.TIME_OUT):
                 result, addr = s.recvfrom(1024)
                 if addr == (host,port) and string.find(result,self.id) == 0:
-                    # print BitArray(bytes=result).bin
+                    # print BitArray(bytes=result).hex
                     return self.process(result)
                 else:
                     print 'oups'
