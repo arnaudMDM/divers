@@ -182,30 +182,33 @@ def resolve():
             # to avoid useless search in the grid, we put some border.
             # eg: we will take the hypothesis that the number is 3, that the square is at the column 2 and at the row 1. We also say 
             #that the divisor is 3 for the row and 1 for the column. We take as convention that the grid begins at 1 and max is 10 for row and columns.
-            minTop = (i[0] - 1) / 10 - j[1] + 1 # it is is the minimum top border where we don't miss any possible rectangle. eg: the value is 1 - 3 - 1 + 1 = -2
+            minTop = (i[0] - 1) / 10 - j[1] + 1 # it is is the minimum top border include where we don't miss any possible rectangle. eg: the value is 1 - 3 = -2
             if minTop < 0:
                 minTop = 0 # eg: -2 is lower than 0 so the top is 0
-            minBottom = (i[0] - 1) / 10 + j[1] # it is is the minimum bottom border where we don't miss any possible rectangle. eg: 1 + 3 - 1 = 3
+            minBottom = (i[0] - 1) / 10 + j[1] # it is is the minimum bottom border exclude where we don't miss any possible rectangle. eg: 1 + 3 = 4
             if minBottom > 10:
                 minBottom = 10
-            minLeft =  (i[0] - j[0]) % 10 # it is is the minimum left border where we don't miss any possible rectangle. eg: 2 - 3 = -1
+            minLeft =  (i[0] - j[0]) % 10 # it is is the minimum left border include where we don't miss any possible rectangle. eg: 2 - 3 = -1
             if minLeft >= (i[0] - 1) % 10 + 1:
                 minLeft = 0 # eg: -1 is lowerthan 0 sothe left border is 0
-            minRight = (i[0] + j[0] - 1) % 10# it is is the minimum right border where we don't miss any possible rectangle. eg: 2 + 3 - 1 = 4
+            minRight = (i[0] + j[0] - 1) % 10# it is is the minimum right border exclude where we don't miss any possible rectangle. eg: 2 + 3 = 5.
             if minRight < (i[0] - 1) % 10 + 1:
                 minRight = 10
             temp = [[],[],[]]
             # we save the left and the right border because we change sometimes value in some iteration for the next loop.
             minLeftBase = minLeft
             minRightBase = minRight
+            #we loop for every row between the top border and the bottom border.
             for k in range(minTop, minBottom):
                 minLeft = minLeftBase
                 minRight = minRightBase
                 global gridInit
-                resultat = gridInit[minRight + 10 * k] - gridInit[minLeft + 10 * k]
+                resultat = gridInit[minRight + 10 * k] - gridInit[minLeft + 10 * k] # for a row we get the number of square with a number between minRight and minLeft.
+                # we check if the row where we are is the row of the square we are doing operations.
                 if k != (i[0] - 1) / 10:
-                    if resultat != 0:
-                        ind = (i[0] - 1) % 10 + 1 + k * 10
+                    if resultat != 0: # it means that there is at least another square between the columns.
+                        ind = (i[0] - 1) % 10 + 1 + k * 10 # ind is the index of gridInit which represents the mean column of minRight and minLeft.
+                        #we check if there is at least one square with a number between minRight and ind.
                         if gridInit[ind] - gridInit[ind - 1] != 0:
                             temp = clearListNotGood(temp, j)
                             continue
@@ -213,7 +216,7 @@ def resolve():
                         if not res:
                             continue
                 else:
-                    if resultat != 1:
+                    if resultat != 1: # it means that there is at least another square between the columns.
                         ind = (i[0] - 1) % 10 + 1 + k * 10
                         res,temp,minLeft,minRight = allEmptySquare(temp, minLeft, minRight, k, ind, j)
                         if not res:

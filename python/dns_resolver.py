@@ -55,9 +55,9 @@ def findIP(website, show):
             else:
                 raise Exception('error: we should have one result')
         else:
-            # we have to ask a DNS below
+            # we have to ask a DNS server below
             if nbAd == 0:
-                # we don't know the IP adress of the DNS below
+                # we don't know the IP adress of the DNS server below
                 # we have this case for this website: docs.python.org
                 temp = [x[5] for x in listAus]
                 for i in temp:

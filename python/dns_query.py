@@ -55,7 +55,7 @@ class DnsQuery:
         self.request = self.listQs = self.listAns = self.listAus = self.listAds = ''
 
     """
-    transform the DNS Notation of variable name into a python string
+    transform the string respecting the DNS Notation into a python string
     """
     def dnsNotaInStr(self, data, index):
         result = ''
@@ -66,10 +66,12 @@ class DnsQuery:
                 debut = False
             else:
                 result += '.'
-            if length == 192 or length == 193:
+
+            if length == 192 or length == 193: # compression ; work like a pointer
                 result += self.dnsNotaInStr(data, ord(data[index + 1]))[1]
                 index += 2
                 return index, result
+
             for i in range(index + 1, index + 1 + length):
                 result += data[i]
             index = index + length + 1
@@ -78,7 +80,7 @@ class DnsQuery:
         return index, result
 
     """
-    transform the python string into a DNS Notation.
+    transform the python string into a string respecting the DNS Notation.
     """
     def strInDnsNota(self,website):
         website = website.split('.')
@@ -145,16 +147,16 @@ class DnsQuery:
             for i in listTemp:
                 for j in range(i[1]):
                     temp = []
-                    index, name = self.dnsNotaInStr(data, index)
+                    index, name = self.dnsNotaInStr(data, index) # name
                     temp.append(name)
-                    typ = struct.unpack('>H', data[index] + data[index + 1])[0]
+                    typ = struct.unpack('>H', data[index] + data[index + 1])[0] # type
                     temp.append(typ)
-                    temp.append(struct.unpack('>H', data[index + 2] + data[index + 3])[0])
-                    temp.append(struct.unpack('>I', data[index + 4] + data[index + 5] + data[index + 6] + data[index + 7])[0])
-                    length = struct.unpack('>H', data[index + 8] + data[index + 9])[0]
+                    temp.append(struct.unpack('>H', data[index + 2] + data[index + 3])[0]) # class
+                    temp.append(struct.unpack('>I', data[index + 4] + data[index + 5] + data[index + 6] + data[index + 7])[0]) # time to live
+                    length = struct.unpack('>H', data[index + 8] + data[index + 9])[0] # RData length
                     temp.append(length)
                     index = index + 10
-                    temp.append(self.processRData(typ, data, index, length))
+                    temp.append(self.processRData(typ, data, index, length)) # RData
                     index += length
                     i[0].append(temp)
             return aa, tc, ra, rc, nbAn, nbAu, nbAd, listAns, listAus, listAds
