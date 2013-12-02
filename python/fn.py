@@ -9,11 +9,23 @@ def digit(n):
     return res
 
 def f(n):
-    res=0
+    res = 0
+    plus = True
+    moins = True
     for i in range(1, n + 1):
         listDigit = digit(i)
         for j in listDigit:
             if j == 1:
                 res += 1
         if i == res:
-            print i
+            print "equal: ", i
+            plus = True
+            moins = True
+        elif res > i and plus:
+            print "positif: ", i
+            plus = False
+            moins = True
+        elif res < i and moins:
+            print "negatif: ", i
+            moins = False
+            plus = True
