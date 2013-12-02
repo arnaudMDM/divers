@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 def digit(n):
     res = []
@@ -55,3 +56,4 @@ def f(n):
                 listBas.append(i-1)
                 plus = True
         maxValue = res - i
+        
