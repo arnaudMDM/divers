@@ -1,4 +1,3 @@
-
 def digit(n):
     res = []
     while True:
