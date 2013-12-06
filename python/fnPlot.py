@@ -29,7 +29,7 @@ fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
 
 p1, = ax.plot([1,nbLimit] ,[0,0], 'r-')
-p2, = ax.plot(f(nbLimit), color='blue', lw=2, label = r'$g(a_na_{n-1}...a_0) = \frac{a_n * 10^n + a_{n-1} * 10^{n-1} + ... + a_0}{10^n}$')
+p2, = ax.plot(f(nbLimit), color='blue', lw=2, label = r'$g(a_na_{n-1}...a_0) = \frac{f(a_na_{n-1}...a_0) - a_na_{n-1}...a_0}{10^n}$')
 legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
 plt.xlabel('log(n)')
 

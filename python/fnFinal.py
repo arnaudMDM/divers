@@ -162,3 +162,5 @@ def getLast(n):
 
 def test():
     print getLastInStep(9, 1)
+
+print getLast(2)
