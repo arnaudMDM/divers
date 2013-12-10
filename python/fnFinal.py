@@ -1,5 +1,8 @@
 DIGIT_LIMIT = 6
 
+"""
+return the value of f(n) which represents the number of 1 in the numbers between 0 and n. n belongs to the Natural
+"""
 def f(n):
     if n == 0:
         return 0
@@ -24,16 +27,9 @@ def f(n):
         res = res + n - num + 1 + f(n - num)
     return res
 
-def findMaxDigit():
-    index = 0
-    while True:
-        nb = 0
-        for i in range(index + 1):
-            nb += 9 * 10 ** i
-        if f(nb) - nb >= 0:
-            return index + 1
-        index += 1
-
+"""
+nb check the equation. We check if there is number next to nb which check also the equation
+"""
 def getAllNear(nb, n):
     nbFound = 1
     while True:
@@ -46,6 +42,9 @@ def getAllNear(nb, n):
             nbFound += 1
     return nb + 1, nbFound
 
+"""
+search one number verifying the equation between 10^(digit-1) and nb
+"""
 def findFromLastSimple(sign,nb,nbSoustract,n):
     if sign:
         check = lambda x: f(x) - x <= 0 
@@ -96,6 +95,9 @@ def checkNoMore(digit, nbMin, nbMax):
         nbAdd *= 10
         digitIndex += 1
 
+"""
+check if the n number verifying the equation is betwween 10^(digit-1) and 10^(digit)
+"""
 def getLastInStep(digit, n):
     nb = 0
     nbFound = 0
@@ -151,10 +153,12 @@ def getLastInStep(digit, n):
             else:
                 digitIndex += 1
 
+"""
+main function which return the n greatest number checking f(x) = x where f(x) is equal of the number of 1 in the numbers between 0 and x. x belongs to the Natural
+"""
 def getLast(n):
-    digit = findMaxDigit()
     nbFound = 0
-    for i in range(digit, 0, -1):
+    for i in range(10, 0, -1): # all with more than 10 digits do not check the equation
         nb,nbFound2 = getLastInStep(i,n - nbFound)
         nbFound += nbFound2
         if nbFound == n:
