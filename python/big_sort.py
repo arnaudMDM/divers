@@ -1,10 +1,9 @@
 # arnaud
 import string
-import re
 import os
 
 nbFile = 100
-f = open("test2.txt", "rb")
+f = open("test.txt", "rb")
 for i in range(nbFile):
     a = f.read(99999990)
     b = [a[j:j+18] for j in range(0, len(a), 18)]
@@ -43,6 +42,8 @@ while nbFile > 1:
         f.close()
         g.close()
         h.close()
+        os.remove("temp" + str(i) + str(j))
+        os.remove("temp" + str(i) + str(j + 1))
     if nbFile % 2 > 0:
         os.rename("temp" + str(i) + str(nbFile - 1), "temp" + str(i + 1) + str(nbFile / 2))
         nbFile = nbFile / 2 + 1

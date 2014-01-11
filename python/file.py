@@ -9,8 +9,9 @@ fo = open("C:\\users\\arnaud\\test.txt", "wb") # r+b
 byte = bytearray(18)
 byte[16] = 13
 byte[17] = 10
-for i in range (3): # 257254902
-    for j in range(16):
-        byte[j] = random.randrange(16)
-    fo.write(byte)
+for i in range(111111111):
+    for l in range(5):
+        for j in range(16):
+            byte[j] = random.randrange(16)
+        fo.write(byte)
 fo.close()

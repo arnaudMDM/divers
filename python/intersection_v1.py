@@ -1,36 +1,49 @@
 import string
-from time import time
 
 nbIntersection = 0
-t0 = 0
-t1 = 0
-t2 = 0
-t3 = 0
 
 f = open("question.txt", "r")
 liste = string.split(f.read(),",")
 f.close()
 dic = {int(liste[i]): i for i in range(len(liste))}
 liste2 = []
-for i in range(1, len(liste) / 10 + 1):
-    temp = time()
-    # print i
-    nb = len(liste2)
+length = 0
+for i in range(1, len(liste) + 1):
     n = dic[i]
-    t0 += time() - temp
-    temp = time()
-    for i in liste2:
-        if n < i:
-            nbIntersection += nb
-            print len(liste2) - nb
-            break
-        nb -= 1
-    t1 += time() - temp
-    temp = time()
-    liste2.insert(len(liste2) - nb, n)
-    t2 += time() - temp
+    index = length / 2
+    lenthIter = index
+    fin = False
+    if lenthIter == 0:
+        lenthIter = 1
+    down = False
+    up = False
+    while True:
+        if lenthIter > 1:
+            lenthIter /= 2
 
-print "t0: ", t0
-print "t1: ", t1
-print "t2: ", t2
+        if index == length:
+            liste2.append(n)
+            break
+        elif index < 0:
+            liste2.insert(0, n)
+            nbIntersection += length
+            break
+        elif liste2[index] < n:
+            if lenthIter == 1 and down:
+                liste2.insert(index + 1, n)
+                nbIntersection += length - index + 1
+                break
+            index += lenthIter
+            down = False
+            up = True
+        else:
+            if lenthIter == 1 and up:
+                liste2.insert(index + 1, n)
+                nbIntersection += length - index
+                break
+            index -= lenthIter
+            down = True
+            up = False
+    length += 1
+
 print nbIntersection
