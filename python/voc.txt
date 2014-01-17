@@ -1,0 +1,11 @@
+# Lesson 1
+先生,せんせい,professor
+教師,きょうし,professor
+学生,がくせい,student
+会社員,かいしゃいん,employee
+医者,いしゃ,doctor
+研究者,けんきゅうしゃ,researcher
+none,エンジニア,engineer
+病院,びおういん,hospital
+大学,だいがく,university
+電気,でんき,electricity
